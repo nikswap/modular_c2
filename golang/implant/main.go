@@ -14,6 +14,15 @@ func CheckError(err error) {
 }
 
 func main() {
+	if len(os.Args) != 3 {
+		log.Fatal("Missing arguments. Please correct.")
+	}
+
+	host := os.Args[1]
+	c2_pass := os.Args[2]
+
+	fmt.Println("Connecting to " + host + " with username " + c2_pass)
+
 	mod := os.Args[1]
 	plugin, err := plugin.Open(mod)
 	CheckError(err)
