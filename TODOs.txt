@@ -1,2 +1,2 @@
-* Implement possibility to choose plugin in server based on client
-* The server need to keep a list of plugins sent to a specific client
+* Make a lot of cool plugins
+* Update plugin url to a correct one in the server
