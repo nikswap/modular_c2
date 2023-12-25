@@ -1,0 +1,3 @@
+https://systemweakness.com/plugin-in-golang-b5d413507f71
+https://reintech.io/blog/introduction-to-gos-plugin-package
+
