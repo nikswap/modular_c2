@@ -39,7 +39,7 @@ func postHeartbeat(w http.ResponseWriter, r *http.Request) {
 	CheckError(err)
 	code := r.Form.Get("client_password")
 	fmt.Println("Got client with code: " + code)
-	io.WriteString(w, "[{\"pluginId\":\"PLUGINTEST\",\"pluginUrl\":\"\",\"pluginName\":\"whoami\"}]")
+	io.WriteString(w, "[{\"pluginId\":\"PLUGINTEST\",\"pluginUrl\":\"http://localhost:3333/plugin/\",\"pluginName\":\"whoami\"}]")
 }
 
 func postPlugin(w http.ResponseWriter, r *http.Request) {
