@@ -1,2 +1,1 @@
 * Make a lot of cool plugins
-* Update plugin url to a correct one in the server

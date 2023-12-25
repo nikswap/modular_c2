@@ -7,12 +7,12 @@ The goal is to have a c2 that is very easy to extend on the fly.
 ## Usage
 Start the server:
 ```
-go run main.go
+go run main.go <listen host>
 ```
 
 Run the implant:
 ```
-go run main.go "http://localhost:3333" "hemmeligt_kodeord"
+go run main.go <listenhost>+":3333" "hemmeligt_kodeord"
 ```
 
 ## Create plugins
