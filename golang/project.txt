@@ -1,3 +1,13 @@
 https://systemweakness.com/plugin-in-golang-b5d413507f71
 https://reintech.io/blog/introduction-to-gos-plugin-package
+https://avi-nash5.medium.com/understanding-dynamic-libraries-and-plugins-in-golang-cbfa99998b28
+https://pkg.go.dev/github.com/dsnet/golib/memfile
+https://gosamples.dev/temp-file/
 
+Structure:
+* Implant:
+** Heartbeat and getting new instructions
+** Download new plugins (use mem as storage: https://stackoverflow.com/questions/40316052/in-memory-file-for-testing)
+
+Features needed to be implementet (besides those used for structure and stuff):
+* Obfuscation of loader. 
