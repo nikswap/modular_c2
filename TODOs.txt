@@ -1,0 +1,3 @@
+* Add more information to send in heartbeat from client to server
+* Implement write to temp file in implant
+* Implement possibility to choose plugin in server based on client
