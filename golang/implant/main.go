@@ -163,7 +163,7 @@ func (implantClient *ImplantClient) HeartBeat() error {
 		implantClient.PluginsToRun = append(implantClient.PluginsToRun, pluginToAdd)
 	}
 	DebugPrinter("LEN BEFORE: " + strconv.Itoa(len(implantClient.PluginsToRun)))
-	DebugPrinter(implantClient.PluginsToRun[0].PluginUrl)
+	//DebugPrinter(implantClient.PluginsToRun[0].PluginUrl)
 	//Decode body and add to plugin list
 	return nil
 }
