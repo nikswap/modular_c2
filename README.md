@@ -4,6 +4,10 @@ A C2 framework using plugin functionality in golang.
 
 The goal is to have a c2 that is very easy to extend on the fly.
 
+# Golang version
+
+** NOTE: This does not work on windows since the plugin is not implemented on windows **
+
 ## Usage
 Start the server:
 ```
