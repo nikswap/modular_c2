@@ -1,0 +1,1 @@
+Make a executuable follow this: https://nodejs.org/api/single-executable-applications.html
