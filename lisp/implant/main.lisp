@@ -2,7 +2,7 @@
 (use-package :sb-bsd-sockets)
 (ql:quickload :drakma)
 
-(defparameter *c2host* "https://webhook.site/568cf95e-0f99-413e-8326-6d493e013557")
+(defparameter *c2host* "")
 (defparameter *c2password* "secret")
 
 (defun get-hostname ()
