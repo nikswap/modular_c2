@@ -9,8 +9,8 @@ const IN = "implant_name";
 const PN = "plugin_name";
 const PC = "plugin_content";
 
-const implants = {}
-const known_plugins = {}
+var implants = {}
+var known_plugins = {}
 
 const requestListener = function (req, res) {
     if (!(request.method == 'POST')) {
@@ -39,8 +39,6 @@ const requestListener = function (req, res) {
                         res.writeHead(200);
                         res.end(implants[post[IN]][PL]);
                     }
-                    res.writeHead(200);
-                    res.end("OK");
                     break
                 case "/plugin/":
                     if (!(IN in post) || !(post[IN] in implants) || !(PN in post) || !(post[PN] in implants[PL])) {
