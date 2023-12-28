@@ -2,7 +2,7 @@
 (use-package :sb-bsd-sockets)
 (ql:quickload :drakma)
 
-(defparameter *c2host* "")
+(defparameter *c2host* "http://localhost:3000")
 (defparameter *c2password* "secret")
 
 (defun get-hostname ()
